@@ -55,6 +55,12 @@ export class PassenderDetailsContainer {
         return this.container.locator('[name="town"]');
     }
 
+    async getGenderLocator(): Promise<Locator> {
+        return this.container.locator('[name*="gender"]');
+    }
+
+
+
     async fillFirstName(firstName: string) {
         Logger.info(`Filling first name: ${firstName}`);
         await (await this.getFirstNameLocator()).fill(firstName);
@@ -100,6 +106,11 @@ export class PassenderDetailsContainer {
         await (await this.getCityLocator()).fill(city);
     }
 
+    async selectGender(gender: string) {
+        Logger.info(`Selecting gender: ${gender}`);
+        await (await this.getGenderLocator()).selectOption(gender);
+    }
+
     async fillAllPassengerDetails(data: Passenger) {
         Logger.info('Filling all passenger details');
         await (await this.getFirstNameLocator()).fill(data.firstName);
@@ -113,9 +124,19 @@ export class PassenderDetailsContainer {
         await (await this.getHouseNumberLocator()).fill(data.houseNumber);
         await (await this.getPostalCodeLocator()).fill(data.postalCode);
         await (await this.getCityLocator()).fill(data.city);
+        await this.selectGender(data.gender);
     }
 
     async getErrorMessage(fieldLocator: Locator): Promise<string | null> {
-        return await fieldLocator.textContent();
+        const errorMassageLocator = fieldLocator.locator('..').getByRole('alert');
+        if (await errorMassageLocator.isVisible()) {
+            return await errorMassageLocator.innerText();
+        }
+        Logger.error(`No error message found for the field: ${fieldLocator.toString()}`);
+        return null;
+    }
+
+    async getGenderErrorMessage(): Promise<string | null> {
+        return await (await this.getGenderLocator()).locator('..').getByRole('paragraph').innerText();
     }
 }

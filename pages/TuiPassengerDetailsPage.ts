@@ -4,6 +4,7 @@ import { Passenger } from './pageContainers/Passenger';
 import { PassenderDetailsContainer } from './pageContainers/PassenderDetailsContainer';
 import { getFakeAddress, getFakeCity, getFakeDayOfBirth, getFakeEmail, getFakeHouseNumber, getFakeLastName, getFakeMonthOfBirth, getFakeName, getFakePhone, getFakePostalCode, getFakeYearOfBirth } from '@utils/faker';
 import { get } from 'http';
+import { th } from '@faker-js/faker/.';
 
 export class TuiPassengerDetailsPage extends BasePage {
   readonly firstNameInput: Locator;
@@ -12,6 +13,7 @@ export class TuiPassengerDetailsPage extends BasePage {
   readonly phoneInput: Locator;
   readonly continueButton: Locator;
   readonly errorMessages: Locator;
+  readonly passengerForm: Locator;
   readonly passengersContainer: Locator;
   readonly passengerContainers: PassenderDetailsContainer[];
 
@@ -23,11 +25,14 @@ export class TuiPassengerDetailsPage extends BasePage {
     this.phoneInput = page.locator('input[name="phone"]').or(page.locator('[data-testid="phone"]'));
     this.continueButton = page.locator('.WCMS_component button[role="button"]');
     this.errorMessages = page.getByRole('alert');
-    this.passengersContainer = page.locator('.PassengerFormV2__passengerContainer');
+    this.passengersContainer = page.locator('div.PassengerFormV2__passengerContainer');
     this.passengerContainers = [];
+    this.passengerForm = page.locator('form[id="pax-form"]');
   }
 
   async initializePassengerContainers(): Promise<void> {
+    await this.waitForPageLoad();
+    await this.passengerForm.waitFor({ state: 'visible', timeout: 60000 });
     const containers = await this.passengersContainer.all();
     for (const container of containers) {
       this.passengerContainers.push(new PassenderDetailsContainer(this.page, container));
@@ -49,6 +54,7 @@ export class TuiPassengerDetailsPage extends BasePage {
         houseNumber: getFakeHouseNumber(),
         postalCode: getFakePostalCode(),
         city: getFakeCity(),
+        gender: "MALE"
       };
       await container.fillAllPassengerDetails(passenger);
     }
@@ -68,5 +74,64 @@ export class TuiPassengerDetailsPage extends BasePage {
     await this.attemptToContinue();
     const errors = await this.checkForValidationErrors();
     return { hasErrors: errors.length > 0, errors };
+  }
+
+  async getMainPassengerContainer(): Promise<PassenderDetailsContainer> {
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.initializePassengerContainers();
+    if (!this.passengerContainers || this.passengerContainers.length === 0) {
+      throw new Error('No passenger containers found');
+    }
+    return this.passengerContainers[0];
+  }
+  
+  async getSecondPassengerContainer(): Promise<PassenderDetailsContainer> {
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.initializePassengerContainers();
+    if (!this.passengerContainers || this.passengerContainers.length < 2) {
+      throw new Error('Less than two passenger containers found');
+    }
+    return this.passengerContainers[1];
+  }
+  
+  async getChildPassengerContainer(): Promise<PassenderDetailsContainer> {
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.initializePassengerContainers();
+    if (!this.passengerContainers || this.passengerContainers.length < 2) {
+      throw new Error('Less than two passenger containers found');
+    }
+    return this.passengerContainers[2];
+  }
+
+  async getErrorMessageForFirstName(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getFirstNameLocator());
+  }
+
+  async getLastNameErrorMessage(paseengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await paseengerContainer.getErrorMessage(await paseengerContainer.getLastNameLocator());
+  }
+
+  async getErrorMessageForEmail(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getEmailLocator());
+  }
+
+  async getErrorMessageForPhone(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getPhoneLocator());
+  }
+
+  async getErrorMessageForStreetName(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getAddressLocator());
+  }
+
+  async getErrorMessageForHouseNumber(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getHouseNumberLocator());
+  }
+
+  async getErrorMessageForPostalCode(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getPostalCodeLocator());
+  }
+
+  async getErrorMessageForCity(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
+    return await passengerContainer.getErrorMessage(await passengerContainer.getCityLocator());
   }
 }

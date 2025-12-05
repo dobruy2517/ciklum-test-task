@@ -10,4 +10,5 @@ export interface Passenger {
     houseNumber: string,
     postalCode: string,
     city: string,
+    gender: string
 }

@@ -6,11 +6,11 @@ import { TuiPassengerDetailsPage } from '../../pages/TuiPassengerDetailsPage';
 import { TuiBookingPage } from '@pages/TuiBookingPage';
 import { Logger } from '@utils/logger';
 import { TestData } from '@utils/testData';
+import { generateTestDescription } from '@utils/helpers';
 
 test.describe('Passenger Details Page Validation Tests', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Set up page with reasonable timeouts
     page.setDefaultTimeout(30000);
     page.setDefaultNavigationTimeout(60000);
   });
@@ -23,12 +23,7 @@ test.describe('Passenger Details Page Validation Tests', () => {
     const passengerDetailsPage = new TuiPassengerDetailsPage(page);
 
     // Variables to store selected data
-    let departure = '';
-    let destination = '';
-    let departureDate = '';
-    let nightsCount = 0;
-    let guestConfig = { adults: 0, children: 0, childAge: 0 };
-    let hotelName = '';
+    let bookingData = TestData.getBookingTestData();
 
     await test.step('Navigate to TUI homepage and accept cookies', async () => {
       await homePage.goto();
@@ -37,10 +32,10 @@ test.describe('Passenger Details Page Validation Tests', () => {
     });
 
     await test.step('Select random departure airport', async () => {
-      departure = await homePage.selectRandomDeparture();
-      expect(departure).toBeTruthy();
-      expect(departure.length).toBeGreaterThan(0);
-      Logger.info(`Selected departure airport: ${departure}`);
+      bookingData.departure = await homePage.selectRandomDeparture();
+      expect(bookingData.departure).toBeTruthy();
+      expect(bookingData.departure.length).toBeGreaterThan(0);
+      Logger.info(`Selected departure airport: ${bookingData.departure}`);
     });
 
     await test.step('Save airport selection', async () => {
@@ -49,10 +44,10 @@ test.describe('Passenger Details Page Validation Tests', () => {
     });
 
     await test.step('Select random destination airport', async () => {
-      destination = await homePage.selectRandomDestination();
-      expect(destination).toBeTruthy();
-      expect(destination.length).toBeGreaterThan(0);
-      Logger.info(`Selected destination: ${destination}`);
+      bookingData.destination = await homePage.selectRandomDestination();
+      expect(bookingData.destination).toBeTruthy();
+      expect(bookingData.destination.length).toBeGreaterThan(0);
+      Logger.info(`Selected destination: ${bookingData.destination}`);
     });
 
     await test.step('Save destination selection', async () => {
@@ -61,9 +56,9 @@ test.describe('Passenger Details Page Validation Tests', () => {
     });
 
     await test.step('Select available departure date', async () => {
-      departureDate = await homePage.selectAvailableDepartureDate();
-      expect(departureDate).toBeTruthy();
-      Logger.info(`Selected departure date: ${departureDate}`);
+      bookingData.departureDate = await homePage.selectAvailableDepartureDate();
+      expect(bookingData.departureDate).toBeTruthy();
+      Logger.info(`Selected departure date: ${bookingData.departureDate}`);
     });
 
     await test.step('Save departure date selection', async () => {
@@ -96,10 +91,10 @@ test.describe('Passenger Details Page Validation Tests', () => {
     })
 
     await test.step('Select first available hotel', async () => {
-      hotelName = await searchResultsPage.selectFirstAvailableHotel();
-      expect(hotelName).toBeTruthy();
-      expect(hotelName).not.toBe('Unknown Hotel');
-      Logger.info(`Selected hotel: ${hotelName}`);
+      bookingData.hotelName = await searchResultsPage.selectFirstAvailableHotel();
+      expect(bookingData.hotelName).toBeTruthy();
+      expect(bookingData.hotelName).not.toBe('Unknown Hotel');
+      Logger.info(`Selected hotel: ${bookingData.hotelName}`);
     });
 
     await test.step('Continue from hotel details', async () => {
@@ -112,11 +107,9 @@ test.describe('Passenger Details Page Validation Tests', () => {
       Logger.info('Clicked on book now button');
     });
 
-    // Step 10: On Passenger details page, add validation checks
     await test.step('Validate passenger details fields', async () => {
       const validationResult = await passengerDetailsPage.validateFields();
-      // Use soft assertions for validation checks
-      expect.soft(validationResult.hasErrors).toBe(true); // Expect errors when fields are empty
+      expect.soft(validationResult.hasErrors).toBe(true); 
       if (validationResult.hasErrors) {
         Logger.error(`Validation errors found: ${validationResult.errors.join(', ')}`);
       } else {
@@ -127,7 +120,7 @@ test.describe('Passenger Details Page Validation Tests', () => {
     // Attach booking summary to Playwright report
     test.info().annotations.push({
       type: 'Booking Summary',
-      description: `\nDeparture: ${departure}\nDestination: ${destination}\nDate: ${departureDate}\nNights: ${nightsCount}\nHotel: ${hotelName}\nGuests: ${guestConfig.adults} adults, ${guestConfig.children} child (age ${guestConfig.childAge})`
-    });
+      description: generateTestDescription(bookingData)
+      });
   });
 });

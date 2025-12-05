@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { BookingData } from './testData';
 
 /**
  * Wait for a specific amount of time
@@ -47,4 +48,8 @@ export function getRandomElement<T>(array: T[]): T {
  */
 export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function generateTestDescription(params: BookingData): string {
+  return `\nDeparture: ${params.departure}\nDestination: ${params.destination}\nDate: ${params.departureDate}\nNights: ${params.nightsCount}\nHotel: ${params.hotelName}\nGuests: ${params.guestConfig.adults} adults, ${params.guestConfig.children} child (age ${params.guestConfig.childAge})`
 }

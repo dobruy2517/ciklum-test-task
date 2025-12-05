@@ -26,7 +26,7 @@ export class TuiHomePage extends BasePage {
   readonly nightsCountSelect: Locator;
   readonly roomsGuestsSelect: Locator;
   readonly roomsGuestsSaveButton: Locator;
-  readonly flightAvailabilityErrorBanner: Locator;
+
 
   constructor(page: Page) {
     super(page);
@@ -53,7 +53,6 @@ export class TuiHomePage extends BasePage {
     this.dapartureDateSectionSaveButton = this.departureDateSection.getByRole('button');
     this.nightsCountSelect = page.locator('[data-test-id="duration-input"]');
     this.roomsGuestsSaveButton = this.roomsGuestsSelect.getByRole('button');
-    this.flightAvailabilityErrorBanner = page.locator('#wrErrorBanner');
   }
 
   async goto(): Promise<void> {
@@ -109,11 +108,20 @@ export class TuiHomePage extends BasePage {
   async selectAvailableDepartureDate(): Promise<string> {
     // Assuming date picker is available, select first available date
     // This might need adjustment based on actual date picker
+    let dateText: string = '';
     await this.departureDateInput.click();
     const availableDate = this.departureAvailableDates.all();
     const date = getRandomElement(await availableDate);
-    await date.click();
-    const dateText = await date.textContent() || '';
+    if (!date) {
+      this.selectRandomDeparture();
+      this.saveAirportSelection();
+      this.selectRandomDestination();
+      this.saveDestinationSelection();
+      this.selectAvailableDepartureDate();
+    } else {
+      await date.click();
+      dateText = await date.textContent() || '';
+    }
     return dateText;
   }
 

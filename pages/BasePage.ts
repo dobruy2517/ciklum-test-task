@@ -1,10 +1,13 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export class BasePage {
   readonly page: Page;
+  readonly flightAvailabilityErrorBanner: Locator;
+
 
   constructor(page: Page) {
     this.page = page;
+    this.flightAvailabilityErrorBanner = page.locator('#wrErrorBanner');
   }
 
   async navigate(url: string): Promise<void> {
