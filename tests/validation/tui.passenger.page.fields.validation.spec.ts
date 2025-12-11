@@ -7,7 +7,7 @@ test.describe('Passenger Details Page Validation Tests', () => {
       passengerDetailsPage,
       bookingData,
       generateTestDescription,
-      navigateToPassengerDetails
+      navigateToPassengerDetails: _navigateToPassengerDetails
     }) => {
 
     // Attach booking summary to Playwright report

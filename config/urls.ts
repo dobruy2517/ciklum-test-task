@@ -4,7 +4,7 @@
  */
 
 export const urls = {
-  home: `/h/${process.env.LOCALE}` || 'nl',
+  home: `/h/${process.env.LOCALE || 'nl'}`,
   // Add more URLs as needed
 };
 
@@ -15,7 +15,7 @@ export const urls = {
  * @param locale - Locale (e.g., 'nl', 'de')
  * @returns The full relative URL
  */
-export const getUrl = (path: keyof typeof urls, env?: string, locale?: string): string => {
+export const getUrl = (path: keyof typeof urls, _env?: string, _locale?: string): string => {
   // For now, simple implementation. Can be extended for dynamic building
   return urls[path];
 };

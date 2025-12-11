@@ -1,16 +1,13 @@
 import { test, expect } from '../../fixtures';
-import { defaultBookingData } from '../../test-data/bookingData';
-import { generateTestDescription } from '../../utils/helpers';
-import { TestData } from '../../utils/testData';
 
 test.describe('Second Passenger validation Tests', () => {
 
   test('Validation of error messages for second passenger on passenger details page for all empty fields', async ({
-     passengerDetailsPage, 
-     bookingData, 
-     errorMessages, 
-     generateTestDescription, 
-     navigateToPassengerDetails 
+     passengerDetailsPage,
+     bookingData,
+     errorMessages,
+     generateTestDescription,
+     navigateToPassengerDetails: _navigateToPassengerDetails
     }) => {
 
     test.info().annotations.push({
@@ -33,7 +30,7 @@ test.describe('Second Passenger validation Tests', () => {
     bookingData,
     errorMessages,
     generateTestDescription,
-    navigateToPassengerDetails
+    navigateToPassengerDetails: _navigateToPassengerDetails
   }) => {
 
     // Attach booking summary to Playwright report

@@ -1,7 +1,5 @@
 import { Locator, Page } from '@playwright/test';
-import { Logger } from '../utils/logger';
 import { locators } from '../locators/locators';
-import type { TuiHomePage } from './TuiHomePage';
 
 export class BasePage {
   readonly page: Page;

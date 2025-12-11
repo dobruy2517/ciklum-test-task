@@ -1,6 +1,6 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { checkFlightAvailability, getRandomElement, goToPassengerDetailsPage } from '../utils/helpers';
+import { getRandomElement } from '../utils/helpers';
 import { Logger } from '../utils/logger';
 import { locators } from '../locators/locators';
 import { urls } from '../config/urls';

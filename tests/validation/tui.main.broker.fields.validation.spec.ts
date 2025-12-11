@@ -8,7 +8,7 @@ test.describe('Main Passenger validation Tests', () => {
       bookingData,
       errorMessages,
       generateTestDescription,
-      navigateToPassengerDetails
+      navigateToPassengerDetails: _navigateToPassengerDetails
     }
   ) => {
 
@@ -42,11 +42,11 @@ test.describe('Main Passenger validation Tests', () => {
 
   //todo Expected to fail because the can accept special characters in street
   test.fixme('Validation of incorrect inputs main passenger details fields on passenger details page', async (
-    { passengerDetailsPage, 
-      bookingData, 
-      errorMessages, 
-      generateTestDescription, 
-      navigateToPassengerDetails 
+    { passengerDetailsPage,
+      bookingData,
+      errorMessages,
+      generateTestDescription,
+      navigateToPassengerDetails: _navigateToPassengerDetails
     }) => {
 
     // Attach booking summary to Playwright report
