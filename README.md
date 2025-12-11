@@ -78,6 +78,45 @@ npm install
 npx playwright install
 ```
 
+## Environment Variables
+
+The framework supports the following environment variables for configuration:
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `BASE_URL` | Base URL for Playwright tests | `https://www.tui.nl` | `https://staging.tui.nl` |
+| `LOCALE` | Locale for URL paths and test data generation | `nl` | `de`, `en` |
+| `WORKERS` | Number of parallel test workers | `1` | `4` |
+| `CI` | Automatically set by CI systems (affects retries and workers) | `undefined` | `true` |
+
+### Setting Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+BASE_URL=https://www.tui.nl
+LOCALE=nl
+WORKERS=4
+```
+
+Or set them in your shell:
+
+```bash
+export BASE_URL=https://staging.tui.nl
+export LOCALE=de
+```
+
+### CI Environment Variables
+
+The GitHub Actions workflow automatically sets:
+
+```yaml
+env:
+  BASE_URL: https://www.tui.nl
+  LOCALE: nl
+  WORKERS: 4
+```
+
 ## Running Tests
 
 ### Run all tests
