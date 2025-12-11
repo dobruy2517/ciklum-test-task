@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures';
+import { test, expect } from '../../fixtures/extendedTestfixture';
 
 test.describe('Second Passenger validation Tests', () => {
 
