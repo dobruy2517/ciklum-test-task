@@ -1,10 +1,10 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { Passenger } from './pageContainers/Passenger';
-import { PassenderDetailsContainer } from './pageContainers/PassenderDetailsContainer';
+import { Passenger } from '../types/Passenger';
+import { Logger } from '../utils/logger';
 import { getFakeAddress, getFakeCity, getFakeDayOfBirth, getFakeEmail, getFakeHouseNumber, getFakeLastName, getFakeMonthOfBirth, getFakeName, getFakePhone, getFakePostalCode, getFakeYearOfBirth } from '@utils/faker';
-import { get } from 'http';
-import { th } from '@faker-js/faker/.';
+import { locators } from '../locators/locators';
+import { PassengerDetailsComponent } from './pageContainers/PassengerDetailsComponent';
 
 export class TuiPassengerDetailsPage extends BasePage {
   readonly firstNameInput: Locator;
@@ -15,33 +15,131 @@ export class TuiPassengerDetailsPage extends BasePage {
   readonly errorMessages: Locator;
   readonly passengerForm: Locator;
   readonly passengersContainer: Locator;
-  readonly passengerContainers: PassenderDetailsContainer[];
 
   constructor(page: Page,) {
     super(page);
-    this.firstNameInput = page.locator('input[name="firstName"]').or(page.locator('[data-testid="first-name"]'));
-    this.lastNameInput = page.locator('input[name="lastName"]').or(page.locator('[data-testid="last-name"]'));
-    this.emailInput = page.locator('input[name="email"]').or(page.locator('[data-testid="email"]'));
-    this.phoneInput = page.locator('input[name="phone"]').or(page.locator('[data-testid="phone"]'));
-    this.continueButton = page.locator('.WCMS_component button[role="button"]');
-    this.errorMessages = page.getByRole('alert');
-    this.passengersContainer = page.locator('div.PassengerFormV2__passengerContainer');
-    this.passengerContainers = [];
-    this.passengerForm = page.locator('form[id="pax-form"]');
+    this.firstNameInput = page.locator(locators.passengerDetailsPage.firstNameInput);
+    this.lastNameInput = page.locator(locators.passengerDetailsPage.lastNameInput);
+    this.emailInput = page.locator(locators.passengerDetailsPage.emailInput);
+    this.phoneInput = page.locator(locators.passengerDetailsPage.phoneInput);
+    this.continueButton = page.locator(locators.passengerDetailsPage.continueButton);
+    this.errorMessages = page.locator(locators.passengerDetailsPage.errorMessages);
+    this.passengersContainer = page.locator(locators.passengerDetailsPage.passengersContainer);
+    this.passengerForm = page.locator(locators.passengerDetailsPage.passengerForm);
   }
 
-  async initializePassengerContainers(): Promise<void> {
+  private async getPassengerContainer(index: number): Promise<PassengerDetailsComponent> {
+    await this.loader.waitFor({ state: 'hidden' });
+    const containerLocator = this.passengersContainer.nth(index);
+    return new PassengerDetailsComponent(this.page, containerLocator);
+  }
+
+  async getPassengerCount(): Promise<number> {
     await this.waitForPageLoad();
     await this.passengerForm.waitFor({ state: 'visible', timeout: 60000 });
     const containers = await this.passengersContainer.all();
-    for (const container of containers) {
-      this.passengerContainers.push(new PassenderDetailsContainer(this.page, container));
-    }
+    return containers.length;
   }
 
+
+  async fillFirstName(index: number, firstName: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await expect(await container.getFirstNameLocator()).toBeVisible();
+    await container.fillFirstName(firstName);
+  }
+
+  async fillLastName(index: number, lastName: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillLastName(lastName);
+  }
+
+  async fillEmail(index: number, email: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillEmail(email);
+  }
+
+  async fillPhone(index: number, phone: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillPhone(phone);
+  }
+
+  async fillDayOfBirth(index: number, dayOfBirth: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillDayOfBirth(dayOfBirth);
+  }
+
+  async fillMonthOfBirth(index: number, monthOfBirth: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillMonthOfBirth(monthOfBirth);
+  }
+
+  async fillYearOfBirth(index: number, yearOfBirth: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillYearOfBirth(yearOfBirth);
+  }
+
+  async fillAddress(index: number, address: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillAddress(address);
+  }
+
+  async fillHouseNumber(index: number, houseNumber: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillHouseNumber(houseNumber);
+  }
+
+  async fillPostalCode(index: number, postalCode: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillPostalCode(postalCode);
+  }
+
+  async fillCity(index: number, city: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillCity(city);
+  }
+
+  async selectGender(index: number, gender: string): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.selectGender(gender);
+  }
+
+  async fillAllPassengerDetails(index: number, data: Passenger): Promise<void> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    await container.fillAllPassengerDetails(data);
+  }
+
+  async getErrorMessage(fieldLocator: Locator): Promise<string | null> {
+    const errorMessageLocator = fieldLocator.locator('..').getByRole('alert');
+    if (await errorMessageLocator.isVisible()) {
+      return await errorMessageLocator.innerText();
+    }
+    Logger.error(`No error message found for the field: ${fieldLocator.toString()}`);
+    return null;
+  }
+
+  async getGenderErrorMessage(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    return await container.getGenderErrorMessage();
+  }
+
+
   async fillPassengerDetails(): Promise<void> {
-    await this.initializePassengerContainers();
-    for (const container of this.passengerContainers) {
+    const count = await this.getPassengerCount();
+    for (let i = 0; i < count; i++) {
       const passenger = {
         firstName: getFakeName(),
         lastName: getFakeLastName(),
@@ -56,7 +154,7 @@ export class TuiPassengerDetailsPage extends BasePage {
         city: getFakeCity(),
         gender: "MALE"
       };
-      await container.fillAllPassengerDetails(passenger);
+      await this.fillAllPassengerDetails(i, passenger);
     }
   }
 
@@ -66,6 +164,9 @@ export class TuiPassengerDetailsPage extends BasePage {
   }
 
   async attemptToContinue(): Promise<void> {
+    const container = await this.getPassengerContainer(0);
+    await expect(await container.getFirstNameLocator()).toBeVisible();
+    await expect(this.loader).not.toBeVisible({ timeout: 60000 });
     await this.continueButton.click();
   }
 
@@ -73,65 +174,69 @@ export class TuiPassengerDetailsPage extends BasePage {
     // Try to continue without filling to trigger validations
     await this.attemptToContinue();
     const errors = await this.checkForValidationErrors();
-    return { hasErrors: errors.length > 0, errors };
-  }
-
-  async getMainPassengerContainer(): Promise<PassenderDetailsContainer> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.initializePassengerContainers();
-    if (!this.passengerContainers || this.passengerContainers.length === 0) {
-      throw new Error('No passenger containers found');
+    const result = { hasErrors: errors.length > 0, errors };
+    if (result.hasErrors) {
+      Logger.error(`Validation errors found: ${result.errors.join(', ')}`);
+    } else {
+      Logger.warn('No validation errors');
     }
-    return this.passengerContainers[0];
-  }
-  
-  async getSecondPassengerContainer(): Promise<PassenderDetailsContainer> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.initializePassengerContainers();
-    if (!this.passengerContainers || this.passengerContainers.length < 2) {
-      throw new Error('Less than two passenger containers found');
-    }
-    return this.passengerContainers[1];
-  }
-  
-  async getChildPassengerContainer(): Promise<PassenderDetailsContainer> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.initializePassengerContainers();
-    if (!this.passengerContainers || this.passengerContainers.length < 2) {
-      throw new Error('Less than two passenger containers found');
-    }
-    return this.passengerContainers[2];
+    return result;
   }
 
-  async getErrorMessageForFirstName(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getFirstNameLocator());
+
+  async getErrorMessageForFirstName(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getFirstNameLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getLastNameErrorMessage(paseengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await paseengerContainer.getErrorMessage(await paseengerContainer.getLastNameLocator());
+  async getLastNameErrorMessage(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getLastNameLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForEmail(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getEmailLocator());
+  async getErrorMessageForEmail(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getEmailLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForPhone(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getPhoneLocator());
+  async getErrorMessageForPhone(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getPhoneLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForStreetName(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getAddressLocator());
+  async getErrorMessageForStreetName(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getAddressLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForHouseNumber(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getHouseNumberLocator());
+  async getErrorMessageForHouseNumber(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getHouseNumberLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForPostalCode(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getPostalCodeLocator());
+  async getErrorMessageForPostalCode(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getPostalCodeLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 
-  async getErrorMessageForCity(passengerContainer: PassenderDetailsContainer): Promise<string | null> {
-    return await passengerContainer.getErrorMessage(await passengerContainer.getCityLocator());
+  async getErrorMessageForCity(index: number): Promise<string | null> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const fieldLocator = await container.getCityLocator();
+    return await container.getErrorMessage(fieldLocator);
   }
 }

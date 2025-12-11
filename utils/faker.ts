@@ -5,10 +5,11 @@ const localeMap: Record<string, any> = {
   en: en,
 };
 
-const envLocale = process.env.FAKER_LOCALE || 'nl';
+const envLocale = process.env.LOCALE || 'nl';
 const selectedLocale = localeMap[envLocale];
 
-const customFaker = new Faker({ locale: [selectedLocale] });
+export const customFaker = new Faker({ locale: [selectedLocale] });
+customFaker.seed(12345);
 
 export function  getFakeName(){
   return customFaker.person.firstName();

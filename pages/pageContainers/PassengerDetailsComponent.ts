@@ -1,8 +1,8 @@
 import { Locator, Page } from "playwright";
-import { Passenger } from "./Passenger";
+import { Passenger } from "../../types/Passenger";
 import { Logger } from "../../utils/logger";
 
-export class PassenderDetailsContainer {
+export class PassengerDetailsComponent {
     readonly page: Page;
     readonly container: Locator;
 
@@ -128,9 +128,9 @@ export class PassenderDetailsContainer {
     }
 
     async getErrorMessage(fieldLocator: Locator): Promise<string | null> {
-        const errorMassageLocator = fieldLocator.locator('..').getByRole('alert');
-        if (await errorMassageLocator.isVisible()) {
-            return await errorMassageLocator.innerText();
+        const errorMessageLocator = fieldLocator.locator('..').getByRole('alert');
+        if (await errorMessageLocator.isVisible()) {
+            return await errorMessageLocator.innerText();
         }
         Logger.error(`No error message found for the field: ${fieldLocator.toString()}`);
         return null;

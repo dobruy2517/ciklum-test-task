@@ -1,6 +1,10 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { getRandomElement } from '../utils/helpers';
+import { checkFlightAvailability, getRandomElement, goToPassengerDetailsPage } from '../utils/helpers';
+import { Logger } from '../utils/logger';
+import { locators } from '../locators/locators';
+import { urls } from '../config/urls';
+import { SelectionComponent } from './pageContainers/SelectionComponent';
 
 export class TuiHomePage extends BasePage {
 
@@ -21,111 +25,148 @@ export class TuiHomePage extends BasePage {
   readonly destinationCities: Locator;
   readonly destinationSectionSaveButton: Locator;
   readonly departureDateSection: Locator;
+  readonly departureCalendar: Locator;
   readonly departureAvailableDates: Locator;
-  readonly dapartureDateSectionSaveButton: Locator;
+  readonly departureDateSectionSaveButton: Locator;
   readonly nightsCountSelect: Locator;
   readonly roomsGuestsSelect: Locator;
   readonly roomsGuestsSaveButton: Locator;
+  readonly airportsSelection: SelectionComponent;
+  readonly destinationSelection: SelectionComponent;
+  readonly dateSelection: SelectionComponent;
 
 
   constructor(page: Page) {
     super(page);
     // Note: Selectors may need to be updated based on actual site structure
-    this.acceptCookiesButton = page.locator('#cmCloseBanner');
-    this.departureInput = page.locator('[data-test-id="airport-input"]');
-    this.airportsSection = page.locator('section[aria-label="airports"]');
-    this.destinationSection = page.locator('section[aria-label="destinations"]');
-    this.departureOptions = this.airportsSection.locator('[aria-label="airport list"] li input:not([disabled])');
-    this.destinationOptions = this.destinationSection.locator('li>:not([class*="disabled"])');
-    this.destinationCities = this.destinationSection.getByRole('checkbox');
-    this.airportsSectionSaveButton = this.airportsSection.getByRole('button');
-    this.destinationSectionSaveButton = this.destinationSection.getByRole('button');
-    this.destinationInput = page.locator('[data-test-id="destination-input"]~[class="inputs__children"]');
-    this.departureDateInput = page.locator('[data-test-id="departure-date-input"]');
-    this.roomsGuestsButton = page.locator('[data-test-id="rooms-and-guest-input"]');
-    this.roomsGuestsSelect = page.locator('[aria-label="room and guest"]');
-    this.adultsSelect = page.locator('[aria-label="adult select"] select');
-    this.childrenSelect = page.locator('[aria-label="child select"] select');
-    this.childAgeSelect = page.locator('[aria-label="age select"] select');
-    this.searchButton = page.locator('button:has-text("Zoeken")').or(page.locator('[data-testid="search-button"]'));
-    this.departureDateSection = page.locator('section[aria-label="Departure date"]');
-    this.departureAvailableDates = this.departureDateSection.locator('td[class*="SelectLegacyDate__cell"][class*="SelectLegacyDate__available"]');
-    this.dapartureDateSectionSaveButton = this.departureDateSection.getByRole('button');
-    this.nightsCountSelect = page.locator('[data-test-id="duration-input"]');
-    this.roomsGuestsSaveButton = this.roomsGuestsSelect.getByRole('button');
+    this.acceptCookiesButton = page.locator(locators.homePage.acceptCookiesButton);
+    this.departureInput = page.locator(locators.homePage.departureInput);
+    this.airportsSection = page.locator(locators.homePage.airportsSection);
+    this.destinationSection = page.locator(locators.homePage.destinationSection);
+    this.departureOptions = this.airportsSection.locator(locators.homePage.departureOptions);
+    this.destinationOptions = this.destinationSection.locator(locators.homePage.destinationOptions);
+    this.destinationCities = this.destinationSection.locator(locators.homePage.destinationCities);
+    this.airportsSectionSaveButton = this.airportsSection.locator(locators.homePage.airportsSectionSaveButton);
+    this.destinationSectionSaveButton = this.destinationSection.locator(locators.homePage.destinationSectionSaveButton);
+    this.destinationInput = page.locator(locators.homePage.destinationInput);
+    this.departureDateInput = page.locator(locators.homePage.departureDateInput);
+    this.roomsGuestsButton = page.locator(locators.homePage.roomsGuestsButton);
+    this.roomsGuestsSelect = page.locator(locators.homePage.roomsGuestsSelect);
+    this.adultsSelect = page.locator(locators.homePage.adultsSelect);
+    this.childrenSelect = page.locator(locators.homePage.childrenSelect);
+    this.childAgeSelect = page.locator(locators.homePage.childAgeSelect);
+    this.searchButton = page.locator(locators.homePage.searchButton);
+    this.departureDateSection = page.locator(locators.homePage.departureDateSection);
+    this.departureCalendar = this.departureDateSection.locator(locators.homePage.departureCalendar);
+    this.departureAvailableDates = this.departureDateSection.locator(locators.homePage.departureAvailableDates);
+    this.departureDateSectionSaveButton = this.departureDateSection.locator(locators.homePage.departureDateSectionSaveButton);
+    this.nightsCountSelect = page.locator(locators.homePage.nightsCountSelect);
+    this.roomsGuestsSaveButton = this.roomsGuestsSelect.locator(locators.homePage.roomsGuestsSaveButton);
+
+    this.airportsSelection = new SelectionComponent(
+      page,
+      this.departureInput,
+      this.airportsSection,
+      this.departureOptions,
+      this.airportsSectionSaveButton
+    );
+
+    this.destinationSelection = new SelectionComponent(
+      page,
+      this.destinationInput,
+      this.destinationSection,
+      this.destinationOptions,
+      this.destinationSectionSaveButton
+    );
+
+    this.dateSelection = new SelectionComponent(
+      page,
+      this.departureDateInput,
+      this.departureDateSection,
+      this.departureAvailableDates,
+      this.departureDateSectionSaveButton
+    );
+
+    // Set up listener for flight availability check on page load
   }
 
   async goto(): Promise<void> {
-    await this.navigate('https://www.tui.nl/h/nl');
+    Logger.info('Navigating to TUI homepage');
+    await this.navigate(urls.home);
   }
 
   async acceptCookies(): Promise<void> {
     if (await this.acceptCookiesButton.isVisible()) {
+      Logger.info('Accepting cookies');
       await this.acceptCookiesButton.click();
     }
   }
 
   async selectRandomDeparture(): Promise<string> {
-    // await this.departureSelect.waitFor();
     await this.departureInput.click();
-    await this.airportsSection.waitFor({ state: 'visible' });
-    let options = await this.departureOptions.all();
-    if (options.length === 0) {
-      options = await this.departureOptions.all();
-    }
-    const selected = getRandomElement(options).locator('..');
-    await selected.check();
-    return await selected.textContent() || '';
+    const departure = await this.airportsSelection.selectRandomOption();
+    await this.airportsSelection.saveSelection();
+    Logger.info(`Selected departure airport: ${departure}`);
+    return departure;
   }
 
   async saveAirportSelection(): Promise<void> {
+    Logger.info('Saving airport selection');
     await this.airportsSectionSaveButton.click();
     await this.airportsSection.waitFor({ state: 'hidden' });
   }
 
   async saveDestinationSelection(): Promise<void> {
+    Logger.info('Saving destination selection');
     await this.destinationSectionSaveButton.click();
     await this.destinationSectionSaveButton.waitFor({ state: 'hidden' });
   }
 
   async saveDepartureDateSelection(): Promise<void> {
-    await this.dapartureDateSectionSaveButton.click();
-    await this.dapartureDateSectionSaveButton.waitFor({ state: 'hidden' });
+    Logger.info('Saving departure date selection');
+    await this.departureDateSectionSaveButton.click();
+    await this.departureDateSectionSaveButton.waitFor({ state: 'hidden' });
   }
 
   async selectRandomDestination(): Promise<string> {
-    await this.destinationInput.click();
-    await this.destinationInput.waitFor({ state: 'visible' });
+    await this.destinationSelection.openSection();
+    await this.destinationSelection.sectionLocator.waitFor({ state: 'visible' });
+    await expect(this.destinationOptions.first()).toBeVisible();
     const options = await this.destinationOptions.all();
     const selected = getRandomElement(options);
     await selected.click();
     const cities = await this.destinationCities.all()
-    const cityCheckbox = getRandomElement(cities);
+    const cityCheckbox = getRandomElement(cities).locator('..');
     await cityCheckbox.check();
-    return await selected.textContent() || '';
+    const destination = await selected.textContent() || '';
+    Logger.info(`Selected destination: ${destination}`);
+    return destination;
   }
 
   async selectAvailableDepartureDate(): Promise<string> {
-    // Assuming date picker is available, select first available date
-    // This might need adjustment based on actual date picker
-    let dateText: string = '';
-    await this.departureDateInput.click();
-    const availableDate = this.departureAvailableDates.all();
-    const date = getRandomElement(await availableDate);
-    if (!date) {
-      this.selectRandomDeparture();
-      this.saveAirportSelection();
-      this.selectRandomDestination();
-      this.saveDestinationSelection();
-      this.selectAvailableDepartureDate();
-    } else {
-      await date.click();
-      dateText = await date.textContent() || '';
+    const MAX_RETRIES = 5;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      await this.departureDateInput.click();
+      await expect(this.departureAvailableDates.first()).toBeVisible();
+      const availableDates = await this.departureAvailableDates.all();
+      if (availableDates.length > 0) {
+        const date = getRandomElement(availableDates);
+        await date.click();
+        const dateText = await date.textContent() || '';
+        Logger.info(`Selected departure date: ${dateText}`);
+        return dateText;
+      } else {
+        await this.selectRandomDeparture();
+        // await this.saveAirportSelection();
+        await this.selectRandomDestination();
+        await this.saveDestinationSelection();
+      }
     }
-    return dateText;
+    throw new Error('No available departure date found after maximum retries');
   }
 
   async selectRandomNightCount() {
+    Logger.info('Selecting random night count');
     const options = await this.nightsCountSelect.locator('option').all();
     const selected = getRandomElement(options)
     const selectedValue = await selected.getAttribute("value");
@@ -133,32 +174,27 @@ export class TuiHomePage extends BasePage {
   }
 
   async configureRoomsAndGuests(adultCount: string, childCount: string, childAge?: string): Promise<{ adults: string; children: string; childAge: string }> {
+    Logger.info(`Configuring rooms and guests: adults=${adultCount}, children=${childCount}, childAge=${childAge || 'random'}`);
     await this.roomsGuestsButton.click();
     await this.adultsSelect.selectOption(adultCount);
     await this.childrenSelect.selectOption(childCount);
     await this.childAgeSelect.waitFor({ state: 'visible' });
+    let finalChildAge = childAge;
     if (childAge) {
       await this.childAgeSelect.selectOption(childAge);
     } else {
       const ageOptions = await this.childAgeSelect.locator('option').allTextContents();
       const availableAges = ageOptions.filter(age => age.trim() !== '');
-      const childAge = getRandomElement(availableAges);
-      await this.childAgeSelect.selectOption(childAge);
+      finalChildAge = getRandomElement(availableAges);
+      await this.childAgeSelect.selectOption(finalChildAge);
     }
-    return { adults: adultCount, children: childCount, childAge: childAge || 'Not specified' };
+    const result = { adults: adultCount, children: childCount, childAge: finalChildAge || 'Not specified' };
+    Logger.info(`Configured guests: ${result.adults} adults, ${result.children} children (age ${result.childAge})`);
+    return result;
   }
 
   async searchHolidays(): Promise<void> {
+    Logger.info('Initiating search for holidays');
     await this.searchButton.click();
-  }
-
-  async checkFlightAvailability() {
-    const isfkightErrorVisible = await this.flightAvailabilityErrorBanner.isVisible();
-    if (isfkightErrorVisible) {
-      await this.page.goBack();
-      await this.selectAvailableDepartureDate();
-      await this.searchHolidays();
-      await this.checkFlightAvailability();
-    }
   }
 }

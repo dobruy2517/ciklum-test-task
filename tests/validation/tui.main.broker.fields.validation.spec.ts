@@ -1,266 +1,87 @@
-import { test, expect } from '@playwright/test';
-import { TuiHomePage } from '../../pages/TuiHomePage';
-import { TuiSearchResultsPage } from '../../pages/TuiSearchResultsPage';
-import { TuiHotelDetailsPage } from '../../pages/TuiHotelDetailsPage';
-import { TuiPassengerDetailsPage } from '../../pages/TuiPassengerDetailsPage';
-import { TuiBookingPage } from '@pages/TuiBookingPage';
-import { Logger } from '@utils/logger';
-import { TestData } from '@utils/testData';
-import { generateTestDescription } from '@utils/helpers';
-import { PassenderDetailsContainer } from '@pages/pageContainers/PassenderDetailsContainer';
+import { test, expect } from '../../fixtures';
 
 test.describe('Main Passenger validation Tests', () => {
-  let homePage: TuiHomePage;
-  let searchResultsPage: TuiSearchResultsPage;
-  let hotelDetailsPage: TuiHotelDetailsPage;
-  let tuiBookingPage: TuiBookingPage;
-  let passengerDetailsPage: TuiPassengerDetailsPage;
 
-  test.beforeEach(async ({ page }) => {
-    page.setDefaultTimeout(30000);
-    page.setDefaultNavigationTimeout(60000);
-    homePage = new TuiHomePage(page);
-    searchResultsPage = new TuiSearchResultsPage(page);
-    hotelDetailsPage = new TuiHotelDetailsPage(page);
-    tuiBookingPage = new TuiBookingPage(page);
-    passengerDetailsPage = new TuiPassengerDetailsPage(page);
-  });
-
-  test('Validation of error messages for main passenger on passenger details page for all empty fields', async ({ page }) => {
-    // Variables to store selected data
-    let bookingData = TestData.getBookingTestData();
-
-    await test.step('Navigate to TUI homepage and accept cookies', async () => {
-      await homePage.goto();
-      await homePage.acceptCookies();
-      Logger.info('Opened homepage and accepted cookies');
-    });
-
-    await test.step('Select random departure airport', async () => {
-      bookingData.departure = await homePage.selectRandomDeparture();
-      expect(bookingData.departure).toBeTruthy();
-      expect(bookingData.departure.length).toBeGreaterThan(0);
-      Logger.info(`Selected departure airport: ${bookingData.departure}`);
-    });
-
-    await test.step('Save airport selection', async () => {
-      await homePage.saveAirportSelection();
-      Logger.info('Saved airport selection');
-    });
-
-    await test.step('Select random destination airport', async () => {
-      bookingData.destination = await homePage.selectRandomDestination();
-      expect(bookingData.destination).toBeTruthy();
-      expect(bookingData.destination.length).toBeGreaterThan(0);
-      Logger.info(`Selected destination: ${bookingData.destination}`);
-    });
-
-    await test.step('Save destination selection', async () => {
-      await homePage.saveDestinationSelection();
-      Logger.info('Saved destination selection');
-    });
-
-    await test.step('Select available departure date', async () => {
-      bookingData.departureDate = await homePage.selectAvailableDepartureDate();
-      expect(bookingData.departureDate).toBeTruthy();
-      Logger.info(`Selected departure date: ${bookingData.departureDate}`);
-    });
-
-    await test.step('Save departure date selection', async () => {
-      await homePage.saveDepartureDateSelection();
-      Logger.info('Saved departure date selection');
-    });
-
-    await test.step('Select random night count', async () => {
-      await homePage.selectRandomNightCount();
-      Logger.info('Selected random night count');
-    })
-
-    await test.step('Configure rooms and guests', async () => {
-      bookingData.guestConfig = TestData.getDefaultGuestConfig();
-      await homePage.configureRoomsAndGuests(bookingData.guestConfig.adults, bookingData.guestConfig.children);
-      Logger.info('Configured rooms and guests')
-      Logger.info(`Guests: ${bookingData.guestConfig.adults} adults, ${bookingData.guestConfig.children} child (age ${bookingData.guestConfig.childAge})`);
-    });
-
-    await test.step('Save room and guest selection', async () => {
-      await homePage.roomsGuestsSaveButton.click();
-      await homePage.roomsGuestsSaveButton.waitFor({ state: 'hidden' });
-      Logger.info('Saved room and guest selection');
-    });
-
-    await test.step('Search for holidays and retry if no flights available', async () => {
-      await homePage.searchHolidays();
-      await homePage.checkFlightAvailability();
-      Logger.info('Initiated search for holidays');
-    })
-
-    await test.step('Select first available hotel', async () => {
-      bookingData.hotelName = await searchResultsPage.selectFirstAvailableHotel();
-      expect(bookingData.hotelName).toBeTruthy();
-      expect(bookingData.hotelName).not.toBe('Unknown Hotel');
-      Logger.info(`Selected hotel: ${bookingData.hotelName}`);
-    });
-
-    await test.step('Continue from hotel details', async () => {
-      await hotelDetailsPage.clickContinue();
-      Logger.info('Continued from hotel details');
-    });
-
-    await test.step('Click on book now button', async () => {
-      await tuiBookingPage.clickOnBookNow();
-      Logger.info('Clicked on book now button');
-    });
-
-    await test.step('Validate main passenger details fields', async () => {
-      const mainPassengerDetails = await passengerDetailsPage.getMainPassengerContainer();
-      await passengerDetailsPage.attemptToContinue();
-      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(mainPassengerDetails);
-      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(mainPassengerDetails);
-      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(mainPassengerDetails);
-      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(mainPassengerDetails);
-      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(mainPassengerDetails);
-      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(mainPassengerDetails);
-      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(mainPassengerDetails);
-      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(mainPassengerDetails);
-
-      expect.soft(streetNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.streetName);
-      expect.soft(houseNumberErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.houseNumber);
-      expect.soft(postalCodeErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.postalCode);
-      expect.soft(cityErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.city);
-      expect.soft(phoneErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.phone);
-      expect.soft(emailErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.email);
-      expect.soft(lastNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.lastName);
-      expect.soft(firstNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().empty.firstName);
-    });
+  test('Validation of error messages for main passenger on passenger details page for all empty fields', async (
+    {
+      passengerDetailsPage,
+      bookingData,
+      errorMessages,
+      generateTestDescription,
+      navigateToPassengerDetails
+    }
+  ) => {
 
     // Attach booking summary to Playwright report
     test.info().annotations.push({
       type: 'Booking Summary',
       description: generateTestDescription(bookingData)
     });
-  });
-
-  //todo Expected to fail because the can accept sepcial characters in street
-  test('Validation of incorrect inputs main passenger details fields on passenger details page', async ({ page }) => {
-    let bookingData = TestData.getBookingTestData();
-
-    await test.step('Navigate to TUI homepage and accept cookies', async () => {
-      await homePage.goto();
-      await homePage.acceptCookies();
-      Logger.info('Opened homepage and accepted cookies');
-    });
-
-    await test.step('Select random departure airport', async () => {
-      bookingData.departure = await homePage.selectRandomDeparture();
-      expect(bookingData.departure).toBeTruthy();
-      expect(bookingData.departure.length).toBeGreaterThan(0);
-      Logger.info(`Selected departure airport: ${bookingData.departure}`);
-    });
-
-    await test.step('Save airport selection', async () => {
-      await homePage.saveAirportSelection();
-      Logger.info('Saved airport selection');
-    });
-
-    await test.step('Select random destination airport', async () => {
-      bookingData.destination = await homePage.selectRandomDestination();
-      expect(bookingData.destination).toBeTruthy();
-      expect(bookingData.destination.length).toBeGreaterThan(0);
-      Logger.info(`Selected destination: ${bookingData.destination}`);
-    });
-
-    await test.step('Save destination selection', async () => {
-      await homePage.saveDestinationSelection();
-      Logger.info('Saved destination selection');
-    });
-
-    await test.step('Select available departure date', async () => {
-      bookingData.departureDate = await homePage.selectAvailableDepartureDate();
-      expect(bookingData.departureDate).toBeTruthy();
-      Logger.info(`Selected departure date: ${bookingData.departureDate}`);
-    });
-
-    await test.step('Save departure date selection', async () => {
-      await homePage.saveDepartureDateSelection();
-      Logger.info('Saved departure date selection');
-    });
-
-    await test.step('Select random night count', async () => {
-      await homePage.selectRandomNightCount();
-      Logger.info('Selected random night count');
-    })
-
-    await test.step('Configure rooms and guests', async () => {
-      bookingData.guestConfig = TestData.getDefaultGuestConfig();
-      await homePage.configureRoomsAndGuests(bookingData.guestConfig.adults, bookingData.guestConfig.children);
-      Logger.info('Configured rooms and guests')
-      Logger.info(`Guests: ${bookingData.guestConfig.adults} adults, ${bookingData.guestConfig.children} child (age ${bookingData.guestConfig.childAge})`);
-    });
-
-    await test.step('Save room and guest selection', async () => {
-      await homePage.roomsGuestsSaveButton.click();
-      await homePage.roomsGuestsSaveButton.waitFor({ state: 'hidden' });
-      Logger.info('Saved room and guest selection');
-    });
-
-    await test.step('Search for holidays and retry if no flights available', async () => {
-      await homePage.searchHolidays();
-      await homePage.checkFlightAvailability();
-      Logger.info('Initiated search for holidays');
-    })
-
-    await test.step('Select first available hotel', async () => {
-      bookingData.hotelName = await searchResultsPage.selectFirstAvailableHotel();
-      expect(bookingData.hotelName).toBeTruthy();
-      expect(bookingData.hotelName).not.toBe('Unknown Hotel');
-      Logger.info(`Selected hotel: ${bookingData.hotelName}`);
-    });
-
-    await test.step('Continue from hotel details', async () => {
-      await hotelDetailsPage.clickContinue();
-      Logger.info('Continued from hotel details');
-    });
-
-    await test.step('Click on book now button', async () => {
-      await tuiBookingPage.clickOnBookNow();
-      Logger.info('Clicked on book now button');
-    });
 
     await test.step('Validate main passenger details fields', async () => {
-      const mainPassengerDetails = await passengerDetailsPage.getMainPassengerContainer();
-      await mainPassengerDetails.fillFirstName("1234");
-      await mainPassengerDetails.fillLastName("!@#$");
-      await mainPassengerDetails.fillEmail("invalid-email");
-      await mainPassengerDetails.fillPhone("abcd");
-      await mainPassengerDetails.fillAddress("5678");
-      await mainPassengerDetails.fillHouseNumber("!@#");
-      await mainPassengerDetails.fillPostalCode("abcd");
-      await mainPassengerDetails.fillCity("1234");
       await passengerDetailsPage.attemptToContinue();
-      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(mainPassengerDetails);
-      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(mainPassengerDetails);
-      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(mainPassengerDetails);
-      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(mainPassengerDetails);
-      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(mainPassengerDetails);
-      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(mainPassengerDetails);
-      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(mainPassengerDetails);
-      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(mainPassengerDetails);
+      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(0);
+      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(0);
+      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(0);
+      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(0);
+      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(0);
+      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(0);
+      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(0);
+      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(0);
 
-      expect.soft(streetNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.streetName);
-      expect.soft(houseNumberErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.houseNumber);
-      expect.soft(postalCodeErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.postalCode);
-      expect.soft(cityErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.city);
-      expect.soft(phoneErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.phone);
-      expect.soft(emailErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.email);
-      expect.soft(lastNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.lastName);
-      expect.soft(firstNameErrorMessage).toBe(TestData.getPassengerErrormassagesMappingLabels().invalid.firstName);
+      expect.soft(streetNameErrorMessage).toBe(errorMessages.empty.streetName);
+      expect.soft(houseNumberErrorMessage).toBe(errorMessages.empty.houseNumber);
+      expect.soft(postalCodeErrorMessage).toBe(errorMessages.empty.postalCode);
+      expect.soft(cityErrorMessage).toBe(errorMessages.empty.city);
+      expect.soft(phoneErrorMessage).toBe(errorMessages.empty.phone);
+      expect.soft(emailErrorMessage).toBe(errorMessages.empty.email);
+      expect.soft(lastNameErrorMessage).toBe(errorMessages.empty.lastName);
+      expect.soft(firstNameErrorMessage).toBe(errorMessages.empty.firstName);
     });
+  });
+
+  //todo Expected to fail because the can accept special characters in street
+  test.fixme('Validation of incorrect inputs main passenger details fields on passenger details page', async (
+    { passengerDetailsPage, 
+      bookingData, 
+      errorMessages, 
+      generateTestDescription, 
+      navigateToPassengerDetails 
+    }) => {
 
     // Attach booking summary to Playwright report
     test.info().annotations.push({
       type: 'Booking Summary',
       description: generateTestDescription(bookingData)
+    });
+
+    await test.step('Validate main passenger details fields', async () => {
+      await passengerDetailsPage.fillFirstName(0, "1234");
+      await passengerDetailsPage.fillLastName(0, "!@#$");
+      await passengerDetailsPage.fillEmail(0, "invalid-email");
+      await passengerDetailsPage.fillPhone(0, "abcd");
+      await passengerDetailsPage.fillAddress(0, "5678");
+      await passengerDetailsPage.fillHouseNumber(0, "!@#");
+      await passengerDetailsPage.fillPostalCode(0, "abcd");
+      await passengerDetailsPage.fillCity(0, "1234");
+      await passengerDetailsPage.attemptToContinue();
+      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(0);
+      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(0);
+      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(0);
+      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(0);
+      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(0);
+      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(0);
+      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(0);
+      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(0);
+
+      expect.soft(streetNameErrorMessage).toBe(errorMessages.invalid.streetName);
+      expect.soft(houseNumberErrorMessage).toBe(errorMessages.invalid.houseNumber);
+      expect.soft(postalCodeErrorMessage).toBe(errorMessages.invalid.postalCode);
+      expect.soft(cityErrorMessage).toBe(errorMessages.invalid.city);
+      expect.soft(phoneErrorMessage).toBe(errorMessages.invalid.phone);
+      expect.soft(emailErrorMessage).toBe(errorMessages.invalid.email);
+      expect.soft(lastNameErrorMessage).toBe(errorMessages.invalid.lastName);
+      expect.soft(firstNameErrorMessage).toBe(errorMessages.invalid.firstName);
     });
   });
 });

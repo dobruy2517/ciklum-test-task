@@ -1,13 +1,28 @@
+import winston from 'winston';
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `[${level.toUpperCase()}] ${timestamp}: ${message}`;
+        })
+    ),
+    transports: [
+        new winston.transports.Console()
+    ]
+});
+
 export class Logger {
     static info(message: string) {
-        console.log(`[INFO] ${new Date().toISOString()}: ${message}`);
+        logger.info(message);
     }
 
     static warn(message: string) {
-        console.warn(`[WARN] ${new Date().toISOString()}: ${message}`);
+        logger.warn(message);
     }
 
     static error(message: string) {
-        console.error(`[ERROR] ${new Date().toISOString()}: ${message}`);
+        logger.error(message);
     }
 }

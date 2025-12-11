@@ -1,3 +1,6 @@
+import { Logger } from './logger';
+import { customFaker } from './faker';
+
 export interface GuestConfig {
   adults: string;
   children: string;
@@ -23,15 +26,19 @@ export class TestData {
   }
 
   static getRandomGuestConfig(): GuestConfig {
-    const adults = Math.floor(Math.random() * 4) + 1; // 1-4 adults
-    const children = Math.floor(Math.random() * 3); // 0-2 children
-    const childAge = children > 0 ? (Math.floor(Math.random() * 12) + 1).toString() : undefined; // 1-12 if children
+    const adults = customFaker.number.int({ min: 1, max: 4 }); // 1-4 adults
+    const children = customFaker.number.int({ min: 0, max: 2 }); // 0-2 children
+    const childAge = children > 0 ? customFaker.number.int({ min: 1, max: 12 }).toString() : undefined; // 1-12 if children
 
-    return {
+    const config = {
       adults: adults.toString(),
       children: children.toString(),
       childAge
     };
+
+    Logger.info(`Generated random guest config: adults=${config.adults}, children=${config.children}, childAge=${config.childAge}`);
+
+    return config;
   }
 
   static getBookingTestData(): BookingData {
@@ -45,7 +52,7 @@ export class TestData {
     };
   }
 
-  static getPassengerErrormassagesMappingLabels(): Record<string, any> {
+  static getPassengerErrorMessagesMappingLabels(): Record<string, any> {
     return {
       empty: {
         firstName: 'Vul de voornaam in (volgens paspoort)',
