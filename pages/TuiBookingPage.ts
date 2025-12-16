@@ -14,6 +14,7 @@ export class TuiBookingPage extends BasePage {
   async clickOnBookNow(): Promise<void> {
     Logger.info('Clicking on book now button');
     await this.page.waitForLoadState('domcontentloaded');
+    await this.bookNowButton.click();
     if(await this.bookNowButton.isVisible()) {
       await this.bookNowButton.click();
     }

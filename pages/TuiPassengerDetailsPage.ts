@@ -239,4 +239,46 @@ export class TuiPassengerDetailsPage extends BasePage {
     const fieldLocator = await container.getCityLocator();
     return await container.getErrorMessage(fieldLocator);
   }
+
+  async getAllErrorMessages(index: number): Promise<Record<string, string | null>> {
+    await this.waitForLoaderHidden();
+    const container = await this.getPassengerContainer(index);
+    const firstNameLocator = await container.getFirstNameLocator();
+    const lastNameLocator = await container.getLastNameLocator();
+    const emailLocator = await container.getEmailLocator();
+    const phoneLocator = await container.getPhoneLocator();
+    const addressLocator = await container.getAddressLocator();
+    const houseNumberLocator = await container.getHouseNumberLocator();
+    const postalCodeLocator = await container.getPostalCodeLocator();
+    const cityLocator = await container.getCityLocator();
+
+    const [firstName, lastName, email, phone, streetName, houseNumber, postalCode, city] = await Promise.all([
+      container.getErrorMessage(firstNameLocator),
+      container.getErrorMessage(lastNameLocator),
+      container.getErrorMessage(emailLocator),
+      container.getErrorMessage(phoneLocator),
+      container.getErrorMessage(addressLocator),
+      container.getErrorMessage(houseNumberLocator),
+      container.getErrorMessage(postalCodeLocator),
+      container.getErrorMessage(cityLocator)
+    ]);
+
+    return {
+      firstName,
+      lastName,
+      email,
+      phone,
+      streetName,
+      houseNumber,
+      postalCode,
+      city
+    };
+  }
+
+  async verifyErrorMessages(index: number, expected: Record<string, string>): Promise<void> {
+    const actualMessages = await this.getAllErrorMessages(index);
+    for (const [field, expectedMessage] of Object.entries(expected)) {
+      expect.soft(actualMessages[field]).toBe(expectedMessage);
+    }
+  }
 }

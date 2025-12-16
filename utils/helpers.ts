@@ -76,39 +76,39 @@ export async function goToPassengerDetailsPage(params: GoToPassengerDetailsParam
   homePage.page.on('load', async () => {
       await checkFlightAvailability(params);
     });
-  await homePage.goto();
-  await homePage.acceptCookies();
+      await homePage.goto();
+      await homePage.acceptCookies();
 
-  bookingData.departure = await homePage.selectRandomDeparture();
-  expect(bookingData.departure).toBeTruthy();
-  expect(bookingData.departure.length).toBeGreaterThan(0);
-  // await homePage.saveAirportSelection();
+      bookingData.departure = await homePage.selectRandomDeparture();
+      expect(bookingData.departure).toBeTruthy();
+      expect(bookingData.departure.length).toBeGreaterThan(0);
+      // await homePage.saveAirportSelection();
 
-  bookingData.destination = await homePage.selectRandomDestination();
-  expect(bookingData.destination).toBeTruthy();
-  expect(bookingData.destination.length).toBeGreaterThan(0);
-  await homePage.saveDestinationSelection();
+      bookingData.destination = await homePage.selectRandomDestination();
+      expect(bookingData.destination).toBeTruthy();
+      expect(bookingData.destination.length).toBeGreaterThan(0);
+      await homePage.saveDestinationSelection();
 
-  bookingData.departureDate = await homePage.selectAvailableDepartureDate();
-  expect(bookingData.departureDate).toBeTruthy();
-  await homePage.saveDepartureDateSelection();
+      bookingData.departureDate = await homePage.selectAvailableDepartureDate();
+      expect(bookingData.departureDate).toBeTruthy();
+      await homePage.saveDepartureDateSelection();
 
-  await homePage.selectRandomNightCount();
+      await homePage.selectRandomNightCount();
 
-  await homePage.configureRoomsAndGuests(bookingData.guestConfig.adults, bookingData.guestConfig.children, bookingData.guestConfig.childAge);
+      await homePage.configureRoomsAndGuests(bookingData.guestConfig.adults, bookingData.guestConfig.children, bookingData.guestConfig.childAge);
 
-  await homePage.roomsGuestsSaveButton.click();
-  await homePage.roomsGuestsSaveButton.waitFor({ state: 'hidden' });
+      await homePage.roomsGuestsSaveButton.click();
+      await homePage.roomsGuestsSaveButton.waitFor({ state: 'hidden' });
 
-  await homePage.searchHolidays();
-  await searchResultsPage.waitForSearchResults();
-  bookingData.hotelName = await searchResultsPage.selectFirstAvailableHotel();
-  expect(bookingData.hotelName).toBeTruthy();
-  expect(bookingData.hotelName).not.toBe('Unknown Hotel');
+      await homePage.searchHolidays();
+      await searchResultsPage.waitForSearchResults();
+      bookingData.hotelName = await searchResultsPage.selectFirstAvailableHotel();
+      expect(bookingData.hotelName).toBeTruthy();
+      expect(bookingData.hotelName).not.toBe('Unknown Hotel');
 
-  await hotelDetailsPage.clickContinue();
-  hotelDetailsPage.waitForLoaderHidden();
-  await bookingPage.clickOnBookNow();
+      await hotelDetailsPage.clickContinue();
+      hotelDetailsPage.waitForLoaderHidden();
+      await bookingPage.clickOnBookNow();
 }
 
 export async function checkFlightAvailability(params: GoToPassengerDetailsParams): Promise<void> {
@@ -122,7 +122,14 @@ export async function checkFlightAvailability(params: GoToPassengerDetailsParams
       if (attempt === MAX_RETRIES - 1) {
         throw new Error('Flight availability check failed after maximum retries');
       }
-      Logger.info('Flight availability error detected, restarting from beginning...');
+      Logger.info('Flight availability error detected, clearing browser context and restarting from beginning...');
+      const context = params.homePage.page.context();
+      await context.clearCookies();
+      await context.clearPermissions();
+      await params.homePage.page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
       await goToPassengerDetailsPage(params);
-    }
   }
+}

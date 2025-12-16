@@ -5,8 +5,7 @@ import { TuiHotelDetailsPage } from '../pages/TuiHotelDetailsPage';
 import { TuiPassengerDetailsPage } from '../pages/TuiPassengerDetailsPage';
 import { TuiBookingPage } from '../pages/TuiBookingPage';
 import { Logger } from '../utils/logger';
-import { TestData } from '../utils/testData';
-import { BookingData } from '../test-data/bookingData';
+import { BookingData, defaultBookingData } from '../test-data/bookingData';
 import { passengerErrorMessages } from '../test-data/errorMessages';
 import { generateTestDescription, goToPassengerDetailsPage } from '../utils/helpers';
 
@@ -22,7 +21,7 @@ export const test = base.extend<{
   errorMessages: typeof passengerErrorMessages;
   generateTestDescription: typeof generateTestDescription;
   goToPassengerDetailsPage: typeof goToPassengerDetailsPage;
-  navigateToPassengerDetails: void;
+  navigateToPassengerDetails: () => Promise<void>;
 }>({
   // Page object fixtures
   homePage: async ({ page }, use) => {
@@ -52,8 +51,7 @@ export const test = base.extend<{
 
   // Test data fixtures
   bookingData: async ({}, use) => {
-    const bookingData = TestData.getBookingTestData();
-    await use(bookingData);
+    await use(defaultBookingData);
   },
 
   // Utility fixtures
@@ -74,8 +72,9 @@ export const test = base.extend<{
   },
 
   navigateToPassengerDetails: async ({ homePage, searchResultsPage, hotelDetailsPage, bookingPage, bookingData }, use) => {
-    await goToPassengerDetailsPage({ homePage, searchResultsPage, hotelDetailsPage, bookingPage, bookingData });
-    await use();
+    await use(async () => {
+      await goToPassengerDetailsPage({ homePage, searchResultsPage, hotelDetailsPage, bookingPage, bookingData });
+    });
   },
 });
 

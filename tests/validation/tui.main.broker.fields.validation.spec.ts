@@ -1,14 +1,22 @@
-import { test, expect } from '../../fixtures/extendedTestfixture';
+import { test } from '../../fixtures/extendedTestfixture';
 
 test.describe('Main Passenger validation Tests', () => {
+
+  test.beforeEach(async ({ navigateToPassengerDetails }) => {
+    await navigateToPassengerDetails();
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.close();
+  });
+
 
   test('Validation of error messages for main passenger on passenger details page for all empty fields', async (
     {
       passengerDetailsPage,
       bookingData,
       errorMessages,
-      generateTestDescription,
-      navigateToPassengerDetails: _navigateToPassengerDetails
+      generateTestDescription
     }
   ) => {
 
@@ -20,33 +28,16 @@ test.describe('Main Passenger validation Tests', () => {
 
     await test.step('Validate main passenger details fields', async () => {
       await passengerDetailsPage.attemptToContinue();
-      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(0);
-      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(0);
-      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(0);
-      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(0);
-      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(0);
-      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(0);
-      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(0);
-      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(0);
-
-      expect.soft(streetNameErrorMessage).toBe(errorMessages.empty.streetName);
-      expect.soft(houseNumberErrorMessage).toBe(errorMessages.empty.houseNumber);
-      expect.soft(postalCodeErrorMessage).toBe(errorMessages.empty.postalCode);
-      expect.soft(cityErrorMessage).toBe(errorMessages.empty.city);
-      expect.soft(phoneErrorMessage).toBe(errorMessages.empty.phone);
-      expect.soft(emailErrorMessage).toBe(errorMessages.empty.email);
-      expect.soft(lastNameErrorMessage).toBe(errorMessages.empty.lastName);
-      expect.soft(firstNameErrorMessage).toBe(errorMessages.empty.firstName);
+      await passengerDetailsPage.verifyErrorMessages(0, errorMessages.empty);
     });
   });
 
-  //todo Expected to fail because the can accept special characters in street
+  //todo Expected to fail because 'street' input can accept special characters
   test.fixme('Validation of incorrect inputs main passenger details fields on passenger details page', async (
     { passengerDetailsPage,
       bookingData,
       errorMessages,
-      generateTestDescription,
-      navigateToPassengerDetails: _navigateToPassengerDetails
+      generateTestDescription
     }) => {
 
     // Attach booking summary to Playwright report
@@ -65,23 +56,7 @@ test.describe('Main Passenger validation Tests', () => {
       await passengerDetailsPage.fillPostalCode(0, "abcd");
       await passengerDetailsPage.fillCity(0, "1234");
       await passengerDetailsPage.attemptToContinue();
-      const firstNameErrorMessage = await passengerDetailsPage.getErrorMessageForFirstName(0);
-      const lastNameErrorMessage = await passengerDetailsPage.getLastNameErrorMessage(0);
-      const emailErrorMessage = await passengerDetailsPage.getErrorMessageForEmail(0);
-      const phoneErrorMessage = await passengerDetailsPage.getErrorMessageForPhone(0);
-      const streetNameErrorMessage = await passengerDetailsPage.getErrorMessageForStreetName(0);
-      const houseNumberErrorMessage = await passengerDetailsPage.getErrorMessageForHouseNumber(0);
-      const postalCodeErrorMessage = await passengerDetailsPage.getErrorMessageForPostalCode(0);
-      const cityErrorMessage = await passengerDetailsPage.getErrorMessageForCity(0);
-
-      expect.soft(streetNameErrorMessage).toBe(errorMessages.invalid.streetName);
-      expect.soft(houseNumberErrorMessage).toBe(errorMessages.invalid.houseNumber);
-      expect.soft(postalCodeErrorMessage).toBe(errorMessages.invalid.postalCode);
-      expect.soft(cityErrorMessage).toBe(errorMessages.invalid.city);
-      expect.soft(phoneErrorMessage).toBe(errorMessages.invalid.phone);
-      expect.soft(emailErrorMessage).toBe(errorMessages.invalid.email);
-      expect.soft(lastNameErrorMessage).toBe(errorMessages.invalid.lastName);
-      expect.soft(firstNameErrorMessage).toBe(errorMessages.invalid.firstName);
+      await passengerDetailsPage.verifyErrorMessages(0, errorMessages.invalid);
     });
   });
 });
