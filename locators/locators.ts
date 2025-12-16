@@ -69,7 +69,7 @@ export const locators = {
 
   // Booking Page Locators
   bookingPage: {
-    bookNowButton: '.ProgressbarNavigation__container button[aria-label="button"]',
+    bookNowButton: '.ProgressbarNavigation__summaryButton button[aria-label="button"]',
   },
 
   // Hotel Details Page Locators

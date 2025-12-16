@@ -16,6 +16,11 @@ export interface BookingData {
   hotelName: string;
 }
 
+export interface PassengerErrorMessages {
+  empty: Record<string, string>;
+  invalid: Record<string, string>;
+}
+
 export class TestData {
   static getDefaultGuestConfig(): GuestConfig {
     return {
@@ -52,7 +57,7 @@ export class TestData {
     };
   }
 
-  static getPassengerErrorMessagesMappingLabels(): Record<string, any> {
+  static getPassengerErrorMessagesMappingLabels(): PassengerErrorMessages {
     return {
       empty: {
         firstName: 'Vul de voornaam in (volgens paspoort)',

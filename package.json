@@ -2,6 +2,7 @@
   "name": "ui-tests-playwright",
   "version": "1.0.0",
   "description": "UI testing framework with TypeScript and Playwright",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",

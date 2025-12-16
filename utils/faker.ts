@@ -1,6 +1,6 @@
 import { en, Faker, nl } from '@faker-js/faker';
 
-const localeMap: Record<string, any> = {
+const localeMap: Record<string, typeof nl> = {
   nl: nl,
   en: en,
 };

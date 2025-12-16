@@ -108,8 +108,6 @@ export async function goToPassengerDetailsPage(params: GoToPassengerDetailsParam
 
   await hotelDetailsPage.clickContinue();
   hotelDetailsPage.waitForLoaderHidden();
-  await hotelDetailsPage.clickContinue();
-
   await bookingPage.clickOnBookNow();
 }
 
